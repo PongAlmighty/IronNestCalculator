@@ -122,6 +122,19 @@
   select.small-well option { background: var(--plate); color: var(--steam); }
   .small-well::placeholder { color: #5d574b; }
   .unit-wrap { position: relative; }
+  .brg-row { display: flex; align-items: center; gap: 8px; }
+  .brg-row .unit-wrap { flex: 1; min-width: 0; }
+  #dial { flex: none; width: 58px; height: 58px; margin-block: -6px; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+  #dial:active { cursor: grabbing; }
+  #dial.unset #turret { opacity: .45; }
+  #bearing { padding-right: 28px; }
+  @media (max-width: 420px) {
+    .brg-row { gap: 6px; }
+    #dial { width: 50px; height: 50px; margin-block: -2px; }
+    #bearing { font-size: 21px; padding-left: 8px; padding-right: 20px; }
+    .brg-row .unit-wrap::after { right: 7px; font-size: 18px; }
+  }
+  #turret { transform-box: view-box; transform-origin: 50px 50px; }
   .unit-wrap::after { content: "°"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-family: var(--numerals); font-weight: 800; font-size: 22px; color: var(--brass); pointer-events: none; }
   .hint { font-size: 11px; letter-spacing: .04em; color: var(--muted); }
   .units button, .key, .lever, .slip-btn { cursor: pointer; font: inherit; }
@@ -285,10 +298,30 @@
     </label>
 
     <div class="pair">
-      <label class="field" for="bearing">
-        <span class="label">Bearing</span>
-        <span class="unit-wrap"><input id="bearing" class="small-well" type="text" inputmode="decimal" autocomplete="off" placeholder="000.0"></span>
-      </label>
+      <div class="field">
+        <label class="label" for="bearing">Bearing</label>
+        <div class="brg-row">
+          <span class="unit-wrap"><input id="bearing" class="small-well" type="text" inputmode="decimal" autocomplete="off" placeholder="000.0"></span>
+          <!-- Top-down turret: drag the guns to aim, scroll to fine-tune -->
+          <svg id="dial" class="unset" viewBox="0 0 100 100" role="slider" aria-label="Aim the turret" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0">
+            <title>Drag the guns to aim · scroll to fine-tune (Shift for 1°)</title>
+            <circle cx="50" cy="50" r="47" fill="#0c0b09" stroke="#7a5f32" stroke-width="3"/>
+            <g id="dialTicks"></g>
+            <path d="M50 4 L45 13 L55 13 Z" fill="#d0502f"/>
+            <g id="turret">
+              <rect x="38" y="10" width="7" height="34" rx="1.5" fill="#8a8170"/>
+              <rect x="55" y="10" width="7" height="34" rx="1.5" fill="#8a8170"/>
+              <rect x="36.5" y="8" width="10" height="6" rx="1.5" fill="#ecc77c"/>
+              <rect x="53.5" y="8" width="10" height="6" rx="1.5" fill="#ecc77c"/>
+              <circle cx="50" cy="54" r="21" fill="#39352d" stroke="#c99a4b" stroke-width="2.5"/>
+              <rect x="34" y="36" width="32" height="9" rx="3" fill="#2a2721" stroke="#c99a4b" stroke-width="1.5"/>
+              <circle cx="50" cy="56" r="12" fill="none" stroke="#7a5f32" stroke-width="1.5"/>
+              <circle cx="58" cy="63" r="4" fill="#2a2721" stroke="#c99a4b" stroke-width="1.2"/>
+              <circle cx="50" cy="56" r="2.5" fill="#c99a4b"/>
+            </g>
+          </svg>
+        </div>
+      </div>
       <label class="field" for="shell">
         <span class="label">Shell type</span>
         <select id="shell" class="small-well">
@@ -480,6 +513,10 @@
     $("bearing").setAttribute("aria-invalid", badBearing);
     $("bearing").style.color = badBearing ? "var(--signal)" : "";
     $("logBtn").disabled = !solution || badBearing;
+    const brg = bearingDeg(), hasBrg = brg !== null && !Number.isNaN(brg);
+    $("turret").style.transform = `rotate(${hasBrg ? brg : 0}deg)`;
+    $("dial").classList.toggle("unset", !hasBrg);
+    $("dial").setAttribute("aria-valuenow", hasBrg ? brg.toFixed(1) : "0");
   }
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -546,6 +583,57 @@
     if (logShot()) { $("distance").focus(); $("distance").select(); }
   }));
   $("bearing").addEventListener("input", render);
+
+  // ---------- Turret dial ----------
+  const dial = $("dial");
+  for (let a = 0; a < 360; a += 15) {
+    const major = a % 90 === 0, mid = a % 45 === 0, r = a * Math.PI / 180;
+    const r1 = major ? 37 : mid ? 40 : 42, r2 = 45;
+    if (a === 0) continue; // north has the red marker
+    $("dialTicks").insertAdjacentHTML("beforeend",
+      `<line x1="${50 + r1 * Math.sin(r)}" y1="${50 - r1 * Math.cos(r)}" x2="${50 + r2 * Math.sin(r)}" y2="${50 - r2 * Math.cos(r)}" stroke="#c99a4b" stroke-width="${major ? 2.5 : 1.2}"/>`);
+  }
+  function setBearing(v) {
+    const r = Math.round((((v % 360) + 360) % 360) * 10) / 10;
+    $("bearing").value = (r >= 360 ? 0 : r).toFixed(1);
+    render();
+  }
+  const currentBearing = () => { const b = bearingDeg(); return b === null || Number.isNaN(b) ? 0 : b; };
+  function aim(e) {
+    const rect = dial.getBoundingClientRect();
+    const dx = e.clientX - (rect.left + rect.width / 2), dy = e.clientY - (rect.top + rect.height / 2);
+    if (Math.hypot(dx, dy) < 3) return;
+    setBearing(Math.round(Math.atan2(dx, -dy) * 180 / Math.PI)); // drag gives whole degrees
+  }
+  dial.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    dial.setPointerCapture(e.pointerId);
+    dial.classList.add("dragging");
+    aim(e);
+  });
+  dial.addEventListener("pointermove", e => { if (dial.hasPointerCapture(e.pointerId)) aim(e); });
+  const endDrag = () => dial.classList.remove("dragging");
+  dial.addEventListener("pointerup", endDrag);
+  dial.addEventListener("pointercancel", endDrag);
+
+  // Wheel: one notch = 0.1°, Shift = 1°. Up turns clockwise. Trackpad deltas are pooled so a swipe isn't a spin.
+  let wheelPool = 0;
+  dial.addEventListener("wheel", e => {
+    e.preventDefault();
+    const delta = e.deltaY || e.deltaX;
+    let notches;
+    if (e.deltaMode === 1) notches = Math.round(delta / 3) || Math.sign(delta);          // lines
+    else if (e.deltaMode === 2 || Math.abs(delta) >= 50) notches = Math.round(delta / 100) || Math.sign(delta); // mouse wheel
+    else { wheelPool += delta; notches = Math.trunc(wheelPool / 20); wheelPool -= notches * 20; }
+    if (notches) setBearing(currentBearing() - notches * (e.shiftKey ? 1 : 0.1));
+  }, { passive: false });
+
+  // Arrow keys in the bearing box nudge it the same way
+  $("bearing").addEventListener("keydown", e => {
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+    e.preventDefault();
+    setBearing(currentBearing() + (e.key === "ArrowUp" ? 1 : -1) * (e.shiftKey ? 1 : 0.1));
+  });
   $("shell").addEventListener("change", e => { store.set("in.shell", e.target.value); render(); });
   $("kmPerCharge").addEventListener("input", e => { store.set("in.kpc", e.target.value); render(); });
   $("maxElev").addEventListener("input", e => { store.set("in.max", e.target.value); render(); });
