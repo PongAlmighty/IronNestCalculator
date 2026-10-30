@@ -605,22 +605,31 @@
     if (Math.hypot(dx, dy) < 3) return;
     setBearing(Math.round(Math.atan2(dx, -dy) * 180 / Math.PI)); // drag gives whole degrees
   }
-  // Left drag (or a finger) aims in whole degrees. Middle drag (press the wheel) adjusts in tenths:
-  // every 6 px right or up adds 0.1°, left or down takes it away.
-  const FINE_PX = 6;
+  // Left drag (or a finger) aims in whole degrees. Middle drag (press the wheel) turns the same way
+  // in tenths: circling clockwise adds, counter-clockwise takes away, and one full circle is 10°.
+  const FINE_DEG_PER_TENTH = 3.6;
   let fine = null;
+  function pointerAngle(e) {
+    const rect = dial.getBoundingClientRect();
+    const dx = e.clientX - (rect.left + rect.width / 2), dy = e.clientY - (rect.top + rect.height / 2);
+    return Math.hypot(dx, dy) < 3 ? null : Math.atan2(dx, -dy) * 180 / Math.PI;
+  }
   dial.addEventListener("pointerdown", e => {
     if (e.button !== 0 && e.button !== 1) return;
     e.preventDefault();
     dial.setPointerCapture(e.pointerId);
     dial.classList.add("dragging");
-    if (e.button === 1) fine = { x: e.clientX, y: e.clientY, start: currentBearing() };
+    if (e.button === 1) fine = { last: pointerAngle(e), turned: 0, start: currentBearing() };
     else { fine = null; aim(e); }
   });
   dial.addEventListener("pointermove", e => {
     if (!dial.hasPointerCapture(e.pointerId)) return;
-    if (fine) setBearing(fine.start + Math.round(((e.clientX - fine.x) - (e.clientY - fine.y)) / FINE_PX) / 10);
-    else aim(e);
+    if (!fine) return aim(e);
+    const a = pointerAngle(e);
+    if (a === null) return;
+    if (fine.last !== null) fine.turned += ((a - fine.last + 540) % 360) - 180; // shortest way round
+    fine.last = a;
+    setBearing(fine.start + Math.round(fine.turned / FINE_DEG_PER_TENTH) / 10);
   });
   // Stop the middle button from starting the browser's autoscroll
   dial.addEventListener("mousedown", e => { if (e.button === 1) e.preventDefault(); });
