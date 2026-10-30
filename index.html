@@ -46,7 +46,8 @@
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
-  main { max-width: 540px; margin: 0 auto; display: grid; gap: 22px; }
+  /* Tall enough that the calculator can always scroll to the top of the screen, past the header */
+  main { max-width: 540px; margin: 0 auto; display: grid; gap: 22px; align-content: start; min-height: calc(100vh + 110px); min-height: calc(100svh + 110px); }
 
   /* ---------- Header: deco sunburst marquee ---------- */
   header { text-align: center; display: grid; gap: 6px; justify-items: center; }
@@ -541,6 +542,30 @@
   $("shell").addEventListener("change", e => { store.set("in.shell", e.target.value); render(); });
   $("kmPerCharge").addEventListener("input", e => { store.set("in.kpc", e.target.value); render(); });
   $("maxElev").addEventListener("input", e => { store.set("in.max", e.target.value); render(); });
+
+  // Header snap: a scroll that stops partway through the header finishes the move,
+  // down to the calculator or back up to the top, so the header is either shown or gone.
+  const plaque = document.querySelector(".plaque");
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const calcTop = () => plaque.getBoundingClientRect().top + scrollY - 12;
+  let lastY = scrollY, dir = 0, settleTimer, snapping = false, touching = false;
+  function settle() {
+    if (touching || snapping) return;
+    const t = calcTop(), y = scrollY;
+    if (y <= 0 || y >= t - 1) return;
+    snapping = true;
+    scrollTo({ top: dir > 0 ? t : 0, behavior: reduceMotion ? "auto" : "smooth" });
+    setTimeout(() => { snapping = false; }, 600);
+  }
+  addEventListener("scroll", () => {
+    const y = scrollY;
+    if (y !== lastY) dir = y > lastY ? 1 : -1;
+    lastY = y;
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(settle, 140);
+  }, { passive: true });
+  addEventListener("touchstart", () => { touching = true; }, { passive: true });
+  addEventListener("touchend", () => { touching = false; clearTimeout(settleTimer); settleTimer = setTimeout(settle, 140); }, { passive: true });
 
   render(); renderLog();
 </script>
