@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Iron Nest Gun Laying</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@600;800&family=Big+Shoulders+Display:wght@700;800&family=Special+Elite&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  /* Layout: one riveted steel fire-control plate (range, charges, drum counter + brass gauge),
+     with a typewritten firing log slip clipped beneath it. Deliberately single-theme: a 1920s
+     diesel works at night — soot, gunmetal, oxidized brass, signal red, and paper. */
+  :root {
+    --soot: #14120e;
+    --plate: #2a2721;
+    --plate-hi: #39352d;
+    --well: #0c0b09;
+    --brass: #c99a4b;
+    --brass-hi: #ecc77c;
+    --brass-dim: #7a5f32;
+    --steam: #e6dcc4;
+    --muted: #9a8f78;
+    --signal: #d0502f;
+    --paper: #d8cdb0;
+    --paper-line: #b9ac8b;
+    --ink: #2a2218;
+    --display: "Big Shoulders Stencil Display", "Arial Narrow", Impact, sans-serif;
+    --numerals: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+    --type: "Special Elite", "Courier New", Courier, monospace;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  [hidden] { display: none !important; }
+  html { background: var(--soot); }
+  body {
+    color: var(--steam); font-family: var(--mono); font-size: 15px;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 46px, rgba(255,255,255,.018) 46px 47px),
+      radial-gradient(ellipse at 50% -10%, #2b251b 0%, var(--soot) 60%);
+    background-color: var(--soot);
+    min-height: 100%; margin: 0;
+    padding-block: 24px 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  main { max-width: 540px; margin: 0 auto; display: grid; gap: 22px; }
+
+  /* ---------- Header: deco sunburst marquee ---------- */
+  header { text-align: center; display: grid; gap: 6px; justify-items: center; }
+  .sunburst {
+    width: 100%; height: 26px;
+    background:
+      repeating-conic-gradient(from 270deg at 50% 100%, var(--brass-dim) 0 3deg, transparent 3deg 9deg);
+    -webkit-mask: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent);
+            mask: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent);
+    opacity: .7;
+  }
+  h1 {
+    margin: 0; font-family: var(--display); font-weight: 800; font-size: 54px; line-height: .9;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--brass);
+    text-shadow: 0 1px 0 var(--brass-hi), 0 -1px 0 #000, 0 3px 12px rgba(201,154,75,.18);
+  }
+  .tagline {
+    display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 600;
+    font-size: 14px; letter-spacing: .32em; text-transform: uppercase; color: var(--muted);
+  }
+  .tagline::before, .tagline::after { content: ""; width: 28px; height: 2px; background: var(--brass-dim); box-shadow: 0 4px 0 var(--brass-dim); }
+
+  /* ---------- Riveted plate ---------- */
+  .plate {
+    position: relative; padding: 26px 22px 22px; display: grid; gap: 20px;
+    background:
+      radial-gradient(circle at 12px 12px, var(--brass-hi) 0 1.5px, var(--brass-dim) 2.5px 4px, transparent 4.5px),
+      radial-gradient(circle at calc(100% - 12px) 12px, var(--brass-hi) 0 1.5px, var(--brass-dim) 2.5px 4px, transparent 4.5px),
+      radial-gradient(circle at 12px calc(100% - 12px), var(--brass-hi) 0 1.5px, var(--brass-dim) 2.5px 4px, transparent 4.5px),
+      radial-gradient(circle at calc(100% - 12px) calc(100% - 12px), var(--brass-hi) 0 1.5px, var(--brass-dim) 2.5px 4px, transparent 4.5px),
+      linear-gradient(170deg, var(--plate-hi), var(--plate) 45%, #221f1a);
+    border: 1px solid #000;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 0 3px #1c1a16, inset 0 0 0 4px rgba(201,154,75,.25), 0 10px 30px rgba(0,0,0,.6);
+  }
+  .plaque {
+    justify-self: center; margin-top: -40px; padding: 4px 18px;
+    font-family: var(--display); font-weight: 800; font-size: 13px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--soot); background: linear-gradient(180deg, var(--brass-hi), var(--brass) 55%, var(--brass-dim));
+    clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
+  }
+
+  .label {
+    font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: .22em; text-transform: uppercase; color: var(--brass);
+  }
+  .field { display: grid; gap: 8px; }
+
+  .range-row { display: flex; gap: 10px; }
+  #distance {
+    flex: 1; min-width: 0; padding: 8px 14px;
+    font-family: var(--numerals); font-weight: 800; font-size: 40px; letter-spacing: .04em; color: var(--brass-hi);
+    background: var(--well); border: 1px solid #000; border-radius: 3px;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.06);
+    font-variant-numeric: tabular-nums;
+  }
+  .units { display: grid; grid-template-rows: 1fr 1fr; gap: 4px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .small-well {
+    width: 100%; min-width: 0; padding: 6px 12px;
+    font-family: var(--numerals); font-weight: 800; font-size: 26px; letter-spacing: .06em; color: var(--brass-hi);
+    background: var(--well); border: 1px solid #000; border-radius: 3px;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.06);
+    font-variant-numeric: tabular-nums;
+  }
+  select.small-well {
+    appearance: none; -webkit-appearance: none; cursor: pointer; font-size: 18px; letter-spacing: .04em;
+    padding-right: 32px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+    background-image: linear-gradient(45deg, transparent 50%, var(--brass) 50%), linear-gradient(135deg, var(--brass) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 55%, calc(100% - 12px) 55%;
+    background-size: 6px 6px; background-repeat: no-repeat;
+    min-height: 46px;
+  }
+  select.small-well option { background: var(--plate); color: var(--steam); }
+  .small-well::placeholder { color: #5d574b; }
+  .unit-wrap { position: relative; }
+  .unit-wrap::after { content: "°"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-family: var(--numerals); font-weight: 800; font-size: 22px; color: var(--brass); pointer-events: none; }
+  .hint { font-size: 11px; letter-spacing: .04em; color: var(--muted); }
+  .units button, .key, .lever, .slip-btn { cursor: pointer; font: inherit; }
+  .units button {
+    width: 52px; border: 1px solid #000; border-radius: 3px; font-family: var(--display); font-weight: 600; font-size: 16px;
+    letter-spacing: .1em; color: var(--muted); background: linear-gradient(#34302a, #23201b);
+  }
+  .units button[aria-pressed="true"] { color: var(--soot); background: linear-gradient(var(--brass-hi), var(--brass)); }
+
+  /* Charge keys: round telegraph-style keys */
+  .keys { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  .key {
+    aspect-ratio: 1; max-width: 100%; border-radius: 50%; border: 2px solid var(--brass-dim);
+    background: radial-gradient(circle at 40% 35%, #4a453b, #1d1b17 70%);
+    color: var(--steam); font-family: var(--numerals); font-weight: 800; font-size: 20px;
+    box-shadow: 0 3px 0 #000, inset 0 1px 0 rgba(255,255,255,.12);
+    transition: transform .06s, box-shadow .06s;
+  }
+  .key.auto { font-family: var(--display); font-size: 12px; letter-spacing: .08em; }
+  .key:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+  .key[aria-pressed="true"] {
+    color: var(--soot); border-color: var(--brass-hi);
+    background: radial-gradient(circle at 40% 35%, var(--brass-hi), var(--brass) 60%, var(--brass-dim));
+    transform: translateY(2px); box-shadow: 0 1px 0 #000, 0 0 14px rgba(236,199,124,.25);
+  }
+  .key.out { color: #5d574b; border-color: #3b372f; }
+  .key.out[aria-pressed="true"] { color: var(--steam); border-color: var(--signal); background: radial-gradient(circle at 40% 35%, #e0745a, var(--signal) 60%, #7a2a16); }
+
+  /* Readout */
+  .readout { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; padding-top: 18px; border-top: 2px groove #4a443a; }
+  .drums { display: flex; align-items: flex-end; gap: 3px; }
+  .drum {
+    width: 40px; height: 62px; display: grid; place-items: center;
+    font-family: var(--numerals); font-weight: 800; font-size: 46px; line-height: 1; color: var(--paper);
+    background: linear-gradient(180deg, #000 0%, #26231e 22%, #34302a 50%, #26231e 78%, #000 100%);
+    border: 1px solid #000; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(201,154,75,.2);
+  }
+  .drum.dot { width: 14px; background: none; border: 0; box-shadow: none; color: var(--brass); }
+  .drum.deg { width: 22px; background: none; border: 0; box-shadow: none; color: var(--brass); font-size: 30px; align-self: flex-start; }
+  .warn {
+    font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: .08em; text-transform: uppercase; line-height: 1;
+    color: var(--signal); text-shadow: 0 0 10px rgba(208,80,47,.35);
+  }
+  .sub { margin-top: 10px; font-size: 12px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+  svg.gauge { width: 132px; height: 92px; }
+
+  .lever {
+    width: 100%; padding: 14px; border: 1px solid #000; border-radius: 3px;
+    font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--soot); background: linear-gradient(180deg, var(--brass-hi), var(--brass) 50%, var(--brass-dim));
+    box-shadow: 0 4px 0 #000, inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .lever:active { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
+  .lever:disabled { filter: grayscale(1) brightness(.5); cursor: not-allowed; transform: none; }
+
+  :is(button, input):focus-visible { outline: 2px solid var(--brass-hi); outline-offset: 3px; }
+
+  /* ---------- Firing log slip ---------- */
+  .slip {
+    position: relative; color: var(--ink); padding: 22px 20px 18px;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 31px, var(--paper-line) 31px 32px),
+      linear-gradient(175deg, #e3d9be, var(--paper) 60%, #c9bd9c);
+    background-position: 0 6px, 0 0;
+    box-shadow: 0 8px 22px rgba(0,0,0,.55);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), 96% 100%, 90% calc(100% - 5px), 82% 100%, 74% calc(100% - 4px), 66% 100%, 57% calc(100% - 6px), 48% 100%, 40% calc(100% - 4px), 31% 100%, 22% calc(100% - 6px), 13% 100%, 6% calc(100% - 4px), 0 100%);
+    display: grid; gap: 10px;
+  }
+  .slip::before {
+    content: ""; position: absolute; top: -8px; left: 50%; width: 70px; height: 18px; transform: translateX(-50%);
+    background: linear-gradient(180deg, #8a8478, #4a463e); border-radius: 2px 2px 4px 4px; box-shadow: 0 2px 3px rgba(0,0,0,.5);
+  }
+  .slip-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--ink); padding-bottom: 6px; }
+  .slip h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: .2em; text-transform: uppercase; }
+  .stamp { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .2em; color: #8b2e1a; border: 2px solid #8b2e1a; padding: 1px 6px; transform: rotate(-3deg); opacity: .8; white-space: nowrap; }
+
+  .log-wrap { overflow-x: auto; overflow-y: hidden; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--type); font-size: 15px; white-space: nowrap; color: var(--ink); font-variant-numeric: tabular-nums; }
+  th { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; text-align: right; padding: 4px 6px; color: #5a4f3c; }
+  td { text-align: right; padding: 6px; height: 32px; }
+  th:first-child, td:first-child { text-align: left; }
+  td.shotno { font-weight: 700; }
+  td.x { width: 36px; padding: 0; text-align: center; }
+  .x button {
+    width: 28px; height: 28px; border: 1.5px solid #8b2e1a; border-radius: 50%; background: transparent; color: #8b2e1a;
+    font-family: var(--display); font-weight: 800; font-size: 15px; line-height: 1; cursor: pointer;
+  }
+  .x button:hover { background: #8b2e1a; color: var(--paper); }
+  .x button:focus-visible { outline-color: #8b2e1a; }
+  .empty { font-family: var(--type); font-size: 15px; color: #5a4f3c; padding: 6px 0; }
+
+  .slip-foot { display: flex; justify-content: flex-end; gap: 8px; align-items: center; flex-wrap: wrap; font-family: var(--type); font-size: 14px; }
+  .slip-btn { border: 1.5px solid var(--ink); background: transparent; color: var(--ink); padding: 4px 12px; font-family: var(--display); font-weight: 600; letter-spacing: .16em; text-transform: uppercase; font-size: 13px; }
+  .slip-btn.danger { border-color: #8b2e1a; color: #8b2e1a; }
+  .slip-btn.danger:hover { background: #8b2e1a; color: var(--paper); }
+  .slip-btn:focus-visible { outline-color: var(--ink); }
+
+  /* ---------- Calibration ---------- */
+  details { color: var(--muted); font-size: 13px; }
+  summary { cursor: pointer; font-family: var(--display); font-weight: 600; letter-spacing: .22em; text-transform: uppercase; font-size: 13px; color: var(--brass-dim); }
+  .cal { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .cal input { width: 100%; padding: 6px 10px; font-family: var(--numerals); font-weight: 700; font-size: 20px; color: var(--brass-hi); background: var(--well); border: 1px solid #000; border-radius: 3px; box-shadow: inset 0 2px 6px rgba(0,0,0,.8); }
+  details p { max-width: 60ch; line-height: 1.55; }
+  code { color: var(--steam); }
+
+  @media (max-width: 420px) {
+    h1 { font-size: 44px; }
+    .drum { width: 32px; height: 52px; font-size: 38px; }
+    svg.gauge { width: 100px; height: 70px; }
+    .keys { gap: 5px; }
+    .key { font-size: 17px; }
+    .key.auto { font-size: 10px; }
+    table { font-size: 13px; }
+    td, th { padding-inline: 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } #needle { transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="sunburst" aria-hidden="true"></div>
+    <h1>Iron Nest</h1>
+    <div class="tagline">Fire Direction · Mk. II</div>
+  </header>
+
+  <section class="plate" aria-label="Firing solution">
+    <div class="plaque">Gun Laying</div>
+
+    <label class="field" for="distance">
+      <span class="label">Range to target</span>
+      <div class="range-row">
+        <input id="distance" type="text" inputmode="decimal" autocomplete="off" value="7.54">
+        <div class="units" role="group" aria-label="Units">
+          <button type="button" id="u-km" aria-pressed="true">KM</button>
+          <button type="button" id="u-m" aria-pressed="false">M</button>
+        </div>
+      </div>
+    </label>
+
+    <div class="pair">
+      <label class="field" for="shell">
+        <span class="label">Shell type</span>
+        <select id="shell" class="small-well">
+          <option value="HE">HE · High Explosive</option>
+          <option value="AP">AP · Armor Piercing</option>
+          <option value="APHE">APHE · Armor-Piercing HE</option>
+          <option value="ATMC">ATMC · Atomic</option>
+          <option value="CLMN">CLMN · Cluster</option>
+          <option value="CYAN">CYAN · Cyanide</option>
+          <option value="DRIL">DRIL · Concrete Drill</option>
+          <option value="EQKE">EQKE · Earthquake</option>
+          <option value="FLCH">FLCH · Flechette</option>
+          <option value="HCHE">HCHE · High-Capacity HE</option>
+          <option value="INCN">INCN · Incendiary</option>
+          <option value="LE">LE · Low Explosive</option>
+          <option value="PCLM">PCLM · Parachute Cluster</option>
+          <option value="PHGN">PHGN · Phosgene</option>
+          <option value="PRPG">PRPG · Propaganda</option>
+          <option value="SMK">SMK · Smoke</option>
+          <option value="STAR">STAR · Star</option>
+          <option value="TEAR">TEAR · Tear Gas</option>
+          <option value="THRM">THRM · Thermite</option>
+          <option value="WP">WP · White Phosphorus</option>
+        </select>
+      </label>
+      <label class="field" for="bearing">
+        <span class="label">Bearing</span>
+        <span class="unit-wrap"><input id="bearing" class="small-well" type="text" inputmode="decimal" autocomplete="off" placeholder="000.0"></span>
+      </label>
+    </div>
+
+    <div class="field">
+      <span class="label">Powder charges</span>
+      <div class="keys" id="charges" role="group" aria-label="Powder charges"></div>
+    </div>
+
+    <div class="readout" aria-live="polite">
+      <div>
+        <div class="label">Elevation</div>
+        <div id="elev" style="margin-top:8px"></div>
+        <div class="sub" id="sub"></div>
+      </div>
+      <svg class="gauge" viewBox="0 0 132 92" aria-hidden="true">
+        <defs>
+          <radialGradient id="face" cx="12" cy="80" r="110" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#3a352c"/><stop offset="1" stop-color="#16140f"/>
+          </radialGradient>
+        </defs>
+        <path d="M12 80 L12 0 A80 80 0 0 1 92 80 Z" fill="url(#face)" stroke="#c99a4b" stroke-width="2.5"/>
+        <path id="danger" fill="#d0502f" opacity=".55"/>
+        <g id="ticks"></g>
+        <line id="needle" x1="12" y1="80" x2="88" y2="80" stroke="#ecc77c" stroke-width="3.5" stroke-linecap="round"
+              style="transition: all .5s cubic-bezier(.3,1.4,.5,1)"/>
+        <circle cx="12" cy="80" r="7" fill="#c99a4b" stroke="#000" stroke-width="1.5"/>
+        <circle cx="12" cy="80" r="2.5" fill="#14120e"/>
+      </svg>
+    </div>
+
+    <button type="button" class="lever" id="logBtn">Log this shot</button>
+  </section>
+
+  <section class="slip" aria-label="Firing log">
+    <div class="slip-head">
+      <h2>Firing Log</h2>
+      <span class="stamp" id="count">0 SHOTS</span>
+    </div>
+    <div class="log-wrap">
+      <table>
+        <thead><tr><th>Shot</th><th>Shell</th><th>Brg</th><th>Chg</th><th>Range</th><th>Elev</th><th><span hidden>Remove</span></th></tr></thead>
+        <tbody id="log"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>No shots logged. Set a range and pull “Log this shot”.</div>
+    </div>
+    <div class="slip-foot" id="foot">
+      <button type="button" class="slip-btn danger" id="clearBtn">Clear log</button>
+    </div>
+  </section>
+
+  <details>
+    <summary>Calibration</summary>
+    <div class="cal">
+      <label class="field" for="kmPerCharge"><span class="label">km per charge</span><input id="kmPerCharge" type="number" step="0.1" min="0.1" value="5"></label>
+      <label class="field" for="maxElev"><span class="label">Max elevation °</span><input id="maxElev" type="number" step="1" min="1" max="90" value="60"></label>
+    </div>
+    <p>Uses the community firing rule: each charge adds 5 km of range, and elevation scales linearly up to 60°. That works out to <code>elevation = km × 12 ÷ charges</code>. The game’s developer has confirmed the ballistics are this simplified, and players report every shell type uses the same elevation. If a game update changes the ballistics, adjust these two numbers to match the in-game calculator. The firing log and these settings are saved in this browser only.</p>
+  </details>
+</main>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+  };
+
+  let unit = store.get("in.unit", "km");
+  let charge = store.get("in.charge", "auto"); // "auto" or "1".."6"
+  let shots = [];
+  try { shots = JSON.parse(store.get("in.shots", "[]")) || []; } catch { shots = []; }
+  let solution = null; // { km, charges, elev } when the current inputs give a valid shot
+  $("shell").value = store.get("in.shell", "HE");
+  if (!$("shell").value) $("shell").value = "HE";
+  $("kmPerCharge").value = store.get("in.kpc", "5");
+  $("maxElev").value = store.get("in.max", "60");
+  if (unit === "m") $("distance").value = "7540";
+
+  const chargesEl = $("charges");
+  ["auto", "1", "2", "3", "4", "5", "6"].forEach(c => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "key" + (c === "auto" ? " auto" : ""); b.dataset.c = c;
+    b.textContent = c === "auto" ? "AUTO" : c;
+    b.setAttribute("aria-label", c === "auto" ? "Automatic charge" : c + " charges");
+    b.addEventListener("click", () => { charge = c; store.set("in.charge", c); render(); });
+    chargesEl.appendChild(b);
+  });
+
+  // Gauge: quarter dial 0–90°, centered at (12,80), radius 80
+  const CX = 12, CY = 80, R = 80;
+  const pt = (deg, r) => [CX + r * Math.cos(deg * Math.PI / 180), CY - r * Math.sin(deg * Math.PI / 180)];
+  const ticks = $("ticks");
+  for (let a = 0; a <= 90; a += 5) {
+    const major = a % 15 === 0, [x1, y1] = pt(a, major ? 66 : 71), [x2, y2] = pt(a, 77);
+    ticks.insertAdjacentHTML("beforeend", `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c99a4b" stroke-width="${major ? 2 : 1}"/>`);
+  }
+
+  function drawDanger(max) {
+    const [x1, y1] = pt(max, R - 2), [x2, y2] = pt(90, R - 2), [x3, y3] = pt(90, 66), [x4, y4] = pt(max, 66);
+    $("danger").setAttribute("d", `M${x1} ${y1} A${R - 2} ${R - 2} 0 0 0 ${x2} ${y2} L${x3} ${y3} A66 66 0 0 1 ${x4} ${y4} Z`);
+  }
+
+  function params() {
+    return { kpc: parseFloat($("kmPerCharge").value) || 5, max: parseFloat($("maxElev").value) || 60 };
+  }
+  function distanceKm() {
+    const v = parseFloat($("distance").value.replace(",", "."));
+    if (!isFinite(v) || v <= 0) return null;
+    return unit === "m" ? v / 1000 : v;
+  }
+  const elevationFor = (km, n, { kpc, max }) => km / (n * kpc) * max;
+  const shellType = () => $("shell").value.trim().toUpperCase();
+  function bearingDeg() {
+    const raw = $("bearing").value.trim();
+    if (!raw) return null;
+    const v = parseFloat(raw.replace(",", "."));
+    return isFinite(v) ? ((v % 360) + 360) % 360 : NaN;
+  }
+
+  function drums(angle) {
+    const [i, f] = angle.toFixed(2).split(".");
+    const cell = (ch, cls = "") => `<span class="drum ${cls}">${ch}</span>`;
+    return `<div class="drums">${[...i.padStart(2, "0")].map(c => cell(c)).join("")}${cell(".", "dot")}${[...f].map(c => cell(c)).join("")}${cell("°", "deg")}</div>`;
+  }
+
+  function render() {
+    $("u-km").setAttribute("aria-pressed", unit === "km");
+    $("u-m").setAttribute("aria-pressed", unit === "m");
+    const p = params(), km = distanceKm();
+    const minCharge = km === null ? null : Math.max(1, Math.ceil(km / p.kpc - 1e-9));
+    const active = charge === "auto" ? minCharge : +charge;
+    drawDanger(Math.min(p.max, 90));
+
+    chargesEl.querySelectorAll(".key").forEach(b => {
+      const c = b.dataset.c;
+      b.setAttribute("aria-pressed", c === charge);
+      b.classList.toggle("out", km !== null && c !== "auto" && +c < minCharge);
+      if (c === "auto") b.textContent = charge === "auto" && minCharge && minCharge <= 6 ? `AUTO ${minCharge}` : "AUTO";
+    });
+
+    const elevEl = $("elev"), sub = $("sub");
+    let angle = 0;
+    solution = null;
+    if (km === null) {
+      elevEl.innerHTML = `<div class="warn">Enter range</div>`; sub.textContent = "Map distance from the turret";
+    } else if (active === null || active > 6) {
+      elevEl.innerHTML = `<div class="warn">Beyond reach</div>`;
+      sub.textContent = `Max ${(6 * p.kpc).toFixed(1)} km on 6 charges`;
+    } else {
+      angle = elevationFor(km, active, p);
+      if (angle > p.max + 1e-9) {
+        elevEl.innerHTML = `<div class="warn">Too far for ${active}</div>`;
+        sub.textContent = `Load ${minCharge}+ charges · needs ${angle.toFixed(1)}°`;
+        angle = Math.min(angle, 90);
+      } else {
+        elevEl.innerHTML = drums(angle);
+        const brg = bearingDeg(), shell = shellType();
+        sub.textContent = [`${km.toFixed(3)} km`, `${active} chg`, shell, brg === null || isNaN(brg) ? null : `brg ${brg.toFixed(1)}°`].filter(Boolean).join(" · ");
+        solution = { km, charges: active, elev: angle };
+      }
+    }
+    const [nx, ny] = pt(angle, 74);
+    $("needle").setAttribute("x2", nx); $("needle").setAttribute("y2", ny);
+    const badBearing = Number.isNaN(bearingDeg());
+    $("bearing").setAttribute("aria-invalid", badBearing);
+    $("bearing").style.color = badBearing ? "var(--signal)" : "";
+    $("logBtn").disabled = !solution || badBearing;
+  }
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ---------- Firing log ----------
+  function saveShots() { store.set("in.shots", JSON.stringify(shots)); }
+  function renderLog() {
+    $("log").innerHTML = shots.map(s => `
+      <tr>
+        <td class="shotno">No. ${s.n}</td>
+        <td>${s.shell ? esc(s.shell) : "—"}</td>
+        <td>${s.bearing == null ? "—" : s.bearing.toFixed(1) + "°"}</td>
+        <td>${s.charges}</td>
+        <td>${s.km.toFixed(2)} km</td>
+        <td>${s.elev.toFixed(2)}°</td>
+        <td class="x"><button type="button" data-n="${s.n}" aria-label="Remove shot ${s.n}">×</button></td>
+      </tr>`).join("");
+    $("empty").hidden = shots.length > 0;
+    $("count").textContent = `${shots.length} SHOT${shots.length === 1 ? "" : "S"}`;
+    resetClear();
+  }
+  $("logBtn").addEventListener("click", () => {
+    if (!solution) return;
+    const n = shots.reduce((m, s) => Math.max(m, s.n), 0) + 1;
+    shots.push({ n, shell: shellType(), bearing: bearingDeg(), ...solution });
+    saveShots(); renderLog();
+  });
+  $("log").addEventListener("click", e => {
+    const b = e.target.closest("button[data-n]");
+    if (!b) return;
+    shots = shots.filter(s => s.n !== +b.dataset.n);
+    saveShots(); renderLog();
+  });
+
+  // Clear needs a second press to confirm
+  function resetClear() {
+    $("foot").innerHTML = shots.length ? `<button type="button" class="slip-btn danger" id="clearBtn">Clear log</button>` : "";
+    const btn = $("clearBtn");
+    if (btn) btn.addEventListener("click", () => {
+      $("foot").innerHTML = `<span>Clear all ${shots.length} shots?</span>
+        <button type="button" class="slip-btn" id="keepBtn">Keep</button>
+        <button type="button" class="slip-btn danger" id="confirmClear">Clear</button>`;
+      $("keepBtn").addEventListener("click", resetClear);
+      $("confirmClear").addEventListener("click", () => { shots = []; saveShots(); renderLog(); });
+      $("keepBtn").focus();
+    });
+  }
+
+  function setUnit(u) {
+    if (u === unit) return;
+    const km = distanceKm();
+    unit = u; store.set("in.unit", u);
+    if (km !== null) $("distance").value = u === "m" ? Math.round(km * 1000) : +km.toFixed(3);
+    render();
+  }
+  $("u-km").addEventListener("click", () => setUnit("km"));
+  $("u-m").addEventListener("click", () => setUnit("m"));
+  $("distance").addEventListener("input", render);
+  ["distance", "bearing", "shell"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") $("logBtn").click(); }));
+  $("bearing").addEventListener("input", render);
+  $("shell").addEventListener("change", e => { store.set("in.shell", e.target.value); render(); });
+  $("kmPerCharge").addEventListener("input", e => { store.set("in.kpc", e.target.value); render(); });
+  $("maxElev").addEventListener("input", e => { store.set("in.max", e.target.value); render(); });
+
+  render(); renderLog();
+</script>
+</body>
+</html>

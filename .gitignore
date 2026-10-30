@@ -1,0 +1,8 @@
+# Local tooling
+.claude/
+
+# OS / editor noise
+.DS_Store
+*.swp
+.vscode/
+.idea/
