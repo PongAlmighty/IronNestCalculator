@@ -304,7 +304,7 @@
           <span class="unit-wrap"><input id="bearing" class="small-well" type="text" inputmode="decimal" autocomplete="off" placeholder="000.0"></span>
           <!-- Top-down turret: drag the guns to aim, scroll to fine-tune -->
           <svg id="dial" class="unset" viewBox="0 0 100 100" role="slider" aria-label="Aim the turret" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0">
-            <title>Drag the guns to aim · scroll to fine-tune (Shift for 1°)</title>
+            <title>Left-drag: aim in whole degrees · Middle-drag (press the wheel): tenths of a degree · Scroll: 0.1° per step</title>
             <circle cx="50" cy="50" r="47" fill="#0c0b09" stroke="#7a5f32" stroke-width="3"/>
             <g id="dialTicks"></g>
             <path d="M50 4 L45 13 L55 13 Z" fill="#d0502f"/>
@@ -605,27 +605,36 @@
     if (Math.hypot(dx, dy) < 3) return;
     setBearing(Math.round(Math.atan2(dx, -dy) * 180 / Math.PI)); // drag gives whole degrees
   }
+  // Left drag (or a finger) aims in whole degrees. Middle drag (press the wheel) adjusts in tenths:
+  // every 6 px right or up adds 0.1°, left or down takes it away.
+  const FINE_PX = 6;
+  let fine = null;
   dial.addEventListener("pointerdown", e => {
+    if (e.button !== 0 && e.button !== 1) return;
     e.preventDefault();
     dial.setPointerCapture(e.pointerId);
     dial.classList.add("dragging");
-    aim(e);
+    if (e.button === 1) fine = { x: e.clientX, y: e.clientY, start: currentBearing() };
+    else { fine = null; aim(e); }
   });
-  dial.addEventListener("pointermove", e => { if (dial.hasPointerCapture(e.pointerId)) aim(e); });
-  const endDrag = () => dial.classList.remove("dragging");
+  dial.addEventListener("pointermove", e => {
+    if (!dial.hasPointerCapture(e.pointerId)) return;
+    if (fine) setBearing(fine.start + Math.round(((e.clientX - fine.x) - (e.clientY - fine.y)) / FINE_PX) / 10);
+    else aim(e);
+  });
+  // Stop the middle button from starting the browser's autoscroll
+  dial.addEventListener("mousedown", e => { if (e.button === 1) e.preventDefault(); });
+  dial.addEventListener("auxclick", e => e.preventDefault());
+  const endDrag = () => { dial.classList.remove("dragging"); fine = null; };
   dial.addEventListener("pointerup", endDrag);
   dial.addEventListener("pointercancel", endDrag);
 
-  // Wheel: one notch = 0.1°, Shift = 1°. Up turns clockwise. Trackpad deltas are pooled so a swipe isn't a spin.
-  let wheelPool = 0;
+  // Wheel: every scroll event is one step of 0.1° (Shift: 1°), however big, so no click of the wheel is lost.
+  // Up turns clockwise.
   dial.addEventListener("wheel", e => {
     e.preventDefault();
     const delta = e.deltaY || e.deltaX;
-    let notches;
-    if (e.deltaMode === 1) notches = Math.round(delta / 3) || Math.sign(delta);          // lines
-    else if (e.deltaMode === 2 || Math.abs(delta) >= 50) notches = Math.round(delta / 100) || Math.sign(delta); // mouse wheel
-    else { wheelPool += delta; notches = Math.trunc(wheelPool / 20); wheelPool -= notches * 20; }
-    if (notches) setBearing(currentBearing() - notches * (e.shiftKey ? 1 : 0.1));
+    if (delta) setBearing(currentBearing() - Math.sign(delta) * (e.shiftKey ? 1 : 0.1));
   }, { passive: false });
 
   // Arrow keys in the bearing box nudge it the same way
