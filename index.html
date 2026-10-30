@@ -102,7 +102,7 @@
     font-variant-numeric: tabular-nums;
   }
   .units { display: grid; grid-template-rows: 1fr 1fr; gap: 4px; }
-  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .small-well {
     width: 100%; min-width: 0; padding: 6px 12px;
     font-family: var(--numerals); font-weight: 800; font-size: 26px; letter-spacing: .06em; color: var(--brass-hi);
@@ -131,7 +131,7 @@
   .units button[aria-pressed="true"] { color: var(--soot); background: linear-gradient(var(--brass-hi), var(--brass)); }
 
   /* Charge keys: round telegraph-style keys */
-  .keys { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  .keys { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
   .key {
     aspect-ratio: 1; max-width: 100%; border-radius: 50%; border: 2px solid var(--brass-dim);
     background: radial-gradient(circle at 40% 35%, #4a453b, #1d1b17 70%);
@@ -150,7 +150,7 @@
   .key.out[aria-pressed="true"] { color: var(--steam); border-color: var(--signal); background: radial-gradient(circle at 40% 35%, #e0745a, var(--signal) 60%, #7a2a16); }
 
   /* Readout */
-  .readout { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; padding-top: 18px; border-top: 2px groove #4a443a; }
+  .readout { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding-top: 18px; border-top: 2px groove #4a443a; }
   .drums { display: flex; align-items: flex-end; gap: 3px; }
   .drum {
     width: 40px; height: 62px; display: grid; place-items: center;
@@ -197,6 +197,8 @@
   .slip h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: .2em; text-transform: uppercase; }
   .stamp { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .2em; color: #8b2e1a; border: 2px solid #8b2e1a; padding: 1px 6px; transform: rotate(-3deg); opacity: .8; white-space: nowrap; }
 
+  main > *, .plate > *, .slip > *, .field, .field > * { min-width: 0; }
+  #distance { width: 100%; }
   .log-wrap { overflow-x: auto; overflow-y: hidden; }
   table { width: 100%; border-collapse: collapse; font-family: var(--type); font-size: 15px; white-space: nowrap; color: var(--ink); font-variant-numeric: tabular-nums; }
   th { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; text-align: right; padding: 4px 6px; color: #5a4f3c; }
@@ -221,11 +223,31 @@
   /* ---------- Calibration ---------- */
   details { color: var(--muted); font-size: 13px; }
   summary { cursor: pointer; font-family: var(--display); font-weight: 600; letter-spacing: .22em; text-transform: uppercase; font-size: 13px; color: var(--brass-dim); }
-  .cal { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .cal { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
   .cal input { width: 100%; padding: 6px 10px; font-family: var(--numerals); font-weight: 700; font-size: 20px; color: var(--brass-hi); background: var(--well); border: 1px solid #000; border-radius: 3px; box-shadow: inset 0 2px 6px rgba(0,0,0,.8); }
   details p { max-width: 60ch; line-height: 1.55; }
   code { color: var(--steam); }
 
+  /* Phones: each logged shot becomes a two-line entry instead of a 7-column row */
+  @media (max-width: 520px) {
+    .slip table, .slip tbody { display: block; }
+    .slip thead { display: none; }
+    .slip tr {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 36px;
+      grid-template-areas: "n shell brg x" "chg range elev x";
+      align-items: center; column-gap: 6px; padding-block: 4px;
+      border-bottom: 1px solid var(--paper-line);
+    }
+    .slip td { height: auto; padding: 2px 0; text-align: left; font-size: 15px; }
+    .slip td[data-label]::before {
+      content: attr(data-label); display: block;
+      font-family: var(--display); font-weight: 600; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #5a4f3c;
+    }
+    .slip td.shotno { grid-area: n; font-size: 17px; }
+    .slip .c-shell { grid-area: shell; } .slip .c-brg { grid-area: brg; }
+    .slip .c-chg { grid-area: chg; } .slip .c-range { grid-area: range; } .slip .c-elev { grid-area: elev; }
+    .slip td.x { grid-area: x; }
+  }
   @media (max-width: 420px) {
     h1 { font-size: 44px; }
     .drum { width: 32px; height: 52px; font-size: 38px; }
@@ -466,11 +488,11 @@
     $("log").innerHTML = shots.map(s => `
       <tr>
         <td class="shotno">No. ${s.n}</td>
-        <td>${s.shell ? esc(s.shell) : "—"}</td>
-        <td>${s.bearing == null ? "—" : s.bearing.toFixed(1) + "°"}</td>
-        <td>${s.charges}</td>
-        <td>${s.km.toFixed(2)} km</td>
-        <td>${s.elev.toFixed(2)}°</td>
+        <td class="c-shell" data-label="Shell">${s.shell ? esc(s.shell) : "—"}</td>
+        <td class="c-brg" data-label="Brg">${s.bearing == null ? "—" : s.bearing.toFixed(1) + "°"}</td>
+        <td class="c-chg" data-label="Chg">${s.charges}</td>
+        <td class="c-range" data-label="Range">${s.km.toFixed(2)} km</td>
+        <td class="c-elev" data-label="Elev">${s.elev.toFixed(2)}°</td>
         <td class="x"><button type="button" data-n="${s.n}" aria-label="Remove shot ${s.n}">×</button></td>
       </tr>`).join("");
     $("empty").hidden = shots.length > 0;
