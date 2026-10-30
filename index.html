@@ -278,13 +278,17 @@
       <div class="range-row">
         <input id="distance" type="text" inputmode="decimal" autocomplete="off" value="7.54">
         <div class="units" role="group" aria-label="Units">
-          <button type="button" id="u-km" aria-pressed="true">KM</button>
-          <button type="button" id="u-m" aria-pressed="false">M</button>
+          <button type="button" id="u-km" aria-pressed="true" tabindex="-1">KM</button>
+          <button type="button" id="u-m" aria-pressed="false" tabindex="-1">M</button>
         </div>
       </div>
     </label>
 
     <div class="pair">
+      <label class="field" for="bearing">
+        <span class="label">Bearing</span>
+        <span class="unit-wrap"><input id="bearing" class="small-well" type="text" inputmode="decimal" autocomplete="off" placeholder="000.0"></span>
+      </label>
       <label class="field" for="shell">
         <span class="label">Shell type</span>
         <select id="shell" class="small-well">
@@ -309,10 +313,6 @@
           <option value="THRM">THRM · Thermite</option>
           <option value="WP">WP · White Phosphorus</option>
         </select>
-      </label>
-      <label class="field" for="bearing">
-        <span class="label">Bearing</span>
-        <span class="unit-wrap"><input id="bearing" class="small-well" type="text" inputmode="decimal" autocomplete="off" placeholder="000.0"></span>
       </label>
     </div>
 
@@ -500,12 +500,14 @@
     $("count").textContent = `${shots.length} SHOT${shots.length === 1 ? "" : "S"}`;
     resetClear();
   }
-  $("logBtn").addEventListener("click", () => {
-    if (!solution) return;
+  function logShot() {
+    if (!solution || $("logBtn").disabled) return false;
     const n = shots.reduce((m, s) => Math.max(m, s.n), 0) + 1;
     shots.push({ n, shell: shellType(), bearing: bearingDeg(), ...solution });
     saveShots(); renderLog();
-  });
+    return true;
+  }
+  $("logBtn").addEventListener("click", logShot);
   $("log").addEventListener("click", e => {
     const b = e.target.closest("button[data-n]");
     if (!b) return;
@@ -537,7 +539,12 @@
   $("u-km").addEventListener("click", () => setUnit("km"));
   $("u-m").addEventListener("click", () => setUnit("m"));
   $("distance").addEventListener("input", render);
-  ["distance", "bearing", "shell"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") $("logBtn").click(); }));
+  // Enter in any field logs the shot and jumps back to the range, ready for the next one
+  ["distance", "bearing", "shell"].forEach(id => $(id).addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    if (logShot()) { $("distance").focus(); $("distance").select(); }
+  }));
   $("bearing").addEventListener("input", render);
   $("shell").addEventListener("change", e => { store.set("in.shell", e.target.value); render(); });
   $("kmPerCharge").addEventListener("input", e => { store.set("in.kpc", e.target.value); render(); });
